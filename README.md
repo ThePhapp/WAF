@@ -1,5 +1,17 @@
 # WAF lab: Nginx + ModSecurity + OWASP CRS + Juice Shop
 
+## Bài mở rộng API Gateway microservices
+
+Stack microservices tại [api-gateway-reference](api-gateway-reference/README.md) chạy trên `localhost:8081` (gateway), `3001` (User), `3002` (Order), `3003` (Aggregator), `9000/9001` (MinIO). Lab WAF/Juice Shop bên dưới vẫn ở `3000/8080`. Tất cả port được bind vào `127.0.0.1`.
+
+```powershell
+docker compose up -d
+docker compose -f api-gateway-reference/docker-compose.yml up --build -d
+pwsh -File evidence/evaluate-gateway.ps1
+```
+
+Xem [báo cáo và ảnh EVD](evidence/REPORT.md) cùng [dữ liệu đánh giá](evidence/results.json). Dừng stack microservices bằng `docker compose -f api-gateway-reference/docker-compose.yml down`.
+
 Bài thực hành này dựng một lab bảo mật chỉ trên máy local. OWASP Juice Shop được mở trực tiếp ở port `3000` để làm đường đối chứng, đồng thời được đặt sau Nginx + ModSecurity + OWASP Core Rule Set (CRS) ở port `8080`.
 
 ## Kiến trúc

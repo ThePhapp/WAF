@@ -1,0 +1,115 @@
+services:
+  # -------------------------------------------------------------
+  # S3 Object Storage: MinIO
+  # Cung cấp lưu trữ avatar với Valet Key pattern (Pre-signed URL 5 phút)
+  # -------------------------------------------------------------
+  minio:
+    image: pgsty/silo:latest
+    container_name: ktpm-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - ktpm-network
+
+  # -------------------------------------------------------------
+  # Microservice: User Service
+  # Quản lý người dùng, cấp JWT token, sinh Pre-signed URL MinIO (5 phút)
+  # -------------------------------------------------------------
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: ktpm-user-service
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      - PORT=3001
+      - JWT_SECRET=super-secret-jwt-key-ktpm-2026
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_PUBLIC_ENDPOINT=http://localhost:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET=avatars
+    depends_on:
+      - minio
+    networks:
+      - ktpm-network
+
+  # -------------------------------------------------------------
+  # Microservice: Order Service
+  # Quản lý đơn hàng người dùng
+  # -------------------------------------------------------------
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: ktpm-order-service
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3002:3002"
+    environment:
+      - PORT=3002
+    networks:
+      - ktpm-network
+
+  # -------------------------------------------------------------
+  # Microservice: Aggregator Service (BFF)
+  # Xử lý Gateway Aggregation pattern cho route /dashboard
+  # -------------------------------------------------------------
+  aggregator-service:
+    build:
+      context: ./services/aggregator-service
+      dockerfile: Dockerfile
+    container_name: ktpm-aggregator-service
+    restart: unless-stopped
+    ports:
+      # Host port 3000 is reserved for the existing Juice Shop WAF lab.
+      - "127.0.0.1:3003:3000"
+    environment:
+      - PORT=3000
+      - USER_SERVICE_URL=http://user-service:3001
+      - ORDER_SERVICE_URL=http://order-service:3002
+    depends_on:
+      - user-service
+      - order-service
+    networks:
+      - ktpm-network
+
+  # -------------------------------------------------------------
+  # API Gateway: Nginx
+  # Thực hiện:
+  # 1. Routing: /users -> user-service, /orders -> order-service
+  # 2. Offloading: Kiểm tra JWT, giới hạn 10 request/giây
+  # 3. Aggregation: /dashboard -> gộp user + đơn hàng
+  # -------------------------------------------------------------
+  api-gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: ktpm-api-gateway
+    restart: unless-stopped
+    ports:
+      # Host port 8080 is reserved for the existing ModSecurity WAF.
+      - "127.0.0.1:8081:80"
+    depends_on:
+      - user-service
+      - order-service
+      - aggregator-service
+    networks:
+      - ktpm-network
+
+networks:
+  ktpm-network:
+    driver: bridge
+
+volumes:
+  minio_data:

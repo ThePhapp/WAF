@@ -1,0 +1,24 @@
+{
+  "name": "ktpm-microservices-gateway",
+  "version": "1.0.0",
+  "description": "Microservices Architecture Demo: User & Order services, Nginx/Node API Gateway, Routing, Offloading (JWT & Rate Limit), Aggregation (/dashboard), and MinIO Valet Key pattern.",
+  "scripts": {
+    "start:standalone": "node scripts/start-standalone.js",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "test": "node scripts/test-all.js",
+    "benchmark": "node scripts/benchmark.js"
+  },
+  "keywords": [
+    "microservices",
+    "api-gateway",
+    "nginx",
+    "jwt-offloading",
+    "rate-limiting",
+    "aggregation",
+    "valet-key",
+    "minio"
+  ],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "api-gateway",
+  "version": "1.0.0",
+  "description": "Standalone Node.js API Gateway implementing Routing, JWT Offloading, Rate Limiting (10 req/s), and Aggregation",
+  "main": "standalone-gateway.js",
+  "scripts": {
+    "start": "node standalone-gateway.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "http-proxy-middleware": "^3.0.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
