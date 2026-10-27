@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WAF + API Gateway — Evidence</title>
+  <style>
+    :root { color-scheme: light; font-family: Segoe UI, Arial, sans-serif; }
+    body { margin: 0; background: #f3f6fb; color: #172235; }
+    main { max-width: 1180px; margin: 0 auto; padding: 36px 44px 48px; }
+    h1 { font-size: 32px; margin: 0 0 8px; letter-spacing: -.02em; }
+    h2 { font-size: 20px; margin: 0 0 16px; }
+    p { margin: 0; line-height: 1.5; }
+    .sub { color: #58677b; margin-bottom: 28px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0 28px; }
+    .card, section { background: #fff; border: 1px solid #dbe3ed; border-radius: 12px; box-shadow: 0 4px 18px #1a345014; }
+    .card { padding: 20px 22px; }
+    .label { color: #607087; font-size: 14px; }
+    .value { color: #126535; font-size: 28px; font-weight: 700; margin-top: 4px; }
+    .small { color: #4c5d70; font-size: 13px; margin-top: 6px; }
+    section { padding: 22px 24px; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #e6ebf2; text-align: left; }
+    th { background: #f7f9fc; color: #47566b; font-weight: 600; }
+    tr:last-child td { border-bottom: 0; }
+    .pass { color: #126535; font-weight: 700; }
+    .blocked { color: #ad3325; font-weight: 700; }
+    .foot { color: #5d6c80; font-size: 13px; margin-top: 18px; }
+    code { font-family: Consolas, monospace; font-size: .93em; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>WAF + API Gateway — Evidence</h1>
+    <p class="sub">Docker localhost lab · WAF + Juice Shop :8080/:3000 · Microservices Gateway :8081</p>
+    <div class="grid">
+      <div class="card"><div class="label">Bộ đánh giá</div><div class="value">14 / 14 PASS</div><div class="small">Routing · JWT · Aggregation · MinIO · Rate limit · WAF</div></div>
+      <div class="card"><div class="label">WAF SQLi</div><div class="value">403 BLOCK</div><div class="small">Direct :3000 = 200 · Protected :8080 = 403 · CRS 942100</div></div>
+      <div class="card"><div class="label">Rate limit gateway</div><div class="value">24 × 429</div><div class="small">30 request đồng thời tại :8081/users/profile</div></div>
+    </div>
+    <section>
+      <h2>Kết quả chức năng</h2>
+      <table>
+        <thead><tr><th>Pattern / kiểm tra</th><th>Endpoint / dữ liệu</th><th>HTTP / kết quả</th></tr></thead>
+        <tbody>
+          <tr><td>WAF request thường</td><td>Juice Shop :3000 → WAF :8080</td><td class="pass">200 → 200</td></tr>
+          <tr><td>WAF SQLi</td><td>CRS 942100; evaluation 949110</td><td class="blocked">200 → 403</td></tr>
+          <tr><td>Routing</td><td>Login / Orders qua :8081</td><td class="pass">200 / 200</td></tr>
+          <tr><td>JWT offloading</td><td>Thiếu / sai / hợp lệ</td><td class="pass">401 / 401 / 200</td></tr>
+          <tr><td>Aggregation</td><td>Dashboard: 2 đơn · 44.200.000 VND</td><td class="pass">200</td></tr>
+          <tr><td>Valet key + MinIO</td><td>URL 300s · PUT · xác nhận avatar</td><td class="pass">200 / 200 / 200</td></tr>
+          <tr><td>Rate limiting</td><td>30 request đồng thời</td><td class="pass">200×6 · 429×24</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section>
+      <h2>Độ trễ · 20 request HTTP 200 mỗi đường, sau warmup</h2>
+      <table>
+        <thead><tr><th>Đường</th><th>Mean</th><th>p50</th><th>p95</th></tr></thead>
+        <tbody>
+          <tr><td>User Service trực tiếp :3001</td><td>3,38 ms</td><td>3,11 ms</td><td>5,16 ms</td></tr>
+          <tr><td>Qua Nginx Gateway :8081</td><td>3,89 ms</td><td>3,82 ms</td><td>4,68 ms</td></tr>
+        </tbody>
+      </table>
+      <p class="foot">Số liệu là một lượt đo trong Docker Desktop; dữ liệu chi tiết và toàn bộ 14 checks nằm trong <code>evidence/results.json</code>. Không lưu JWT hoặc pre-signed URL.</p>
+    </section>
+  </main>
+</body>
+</html>

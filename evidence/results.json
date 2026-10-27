@@ -1,0 +1,135 @@
+{
+  "Checks": [
+    {
+      "Name": "WAF direct backend",
+      "Expected": 200,
+      "Actual": 200,
+      "Pass": true
+    },
+    {
+      "Name": "WAF protected endpoint",
+      "Expected": 200,
+      "Actual": 200,
+      "Pass": true
+    },
+    {
+      "Name": "Gateway health",
+      "Expected": 200,
+      "Actual": 200,
+      "Pass": true
+    },
+    {
+      "Name": "Gateway routing login",
+      "Expected": 200,
+      "Actual": 200,
+      "Pass": true
+    },
+    {
+      "Name": "JWT missing token blocked",
+      "Expected": 401,
+      "Actual": 401,
+      "Pass": true
+    },
+    {
+      "Name": "JWT invalid token blocked",
+      "Expected": 401,
+      "Actual": 401,
+      "Pass": true
+    },
+    {
+      "Name": "JWT valid token allowed",
+      "Expected": 200,
+      "Actual": 200,
+      "Pass": true
+    },
+    {
+      "Name": "Routing orders",
+      "Expected": 200,
+      "Actual": 200,
+      "Pass": true
+    },
+    {
+      "Name": "Aggregation dashboard",
+      "Expected": 200,
+      "Actual": 200,
+      "Pass": true
+    },
+    {
+      "Name": "Valet key expiry 300s",
+      "Expected": 300,
+      "Actual": 300,
+      "Pass": true
+    },
+    {
+      "Name": "MinIO direct upload",
+      "Expected": 200,
+      "Actual": 200,
+      "Pass": true
+    },
+    {
+      "Name": "Avatar confirmation",
+      "Expected": 200,
+      "Actual": 200,
+      "Pass": true
+    },
+    {
+      "Name": "Rate limit triggered",
+      "Expected": ">=1 x 429",
+      "Actual": 24,
+      "Pass": true
+    },
+    {
+      "Name": "WAF SQLi blocking",
+      "Expected": 403,
+      "Actual": 403,
+      "Pass": true
+    }
+  ],
+  "PassCount": 14,
+  "TotalCount": 14,
+  "Measurements": {
+    "Waf": {
+      "DirectStatus": 200,
+      "ProtectedStatus": 200,
+      "SqliDirectStatus": 200,
+      "SqliProtectedStatus": 403
+    },
+    "Gateway": {
+      "HealthStatus": 200,
+      "LoginStatus": 200,
+      "MissingJwtStatus": 401,
+      "InvalidJwtStatus": 401,
+      "ValidJwtStatus": 200,
+      "OrdersStatus": 200,
+      "DashboardStatus": 200,
+      "DashboardOrders": 2,
+      "DashboardTotalSpent": 44200000,
+      "PresignedStatus": 200,
+      "PresignedExpiresInSeconds": 300,
+      "MinioUploadStatus": 200,
+      "AvatarConfirmStatus": 200,
+      "RateLimit429Count": 24,
+      "RateLimitStatuses": "200x6,429x24"
+    },
+    "Benchmark": [
+      {
+        "Uri": "http://localhost:3001/users/profile",
+        "Requests": 20,
+        "Successful": 20,
+        "Statuses": "200x20",
+        "MeanMs": 3.38,
+        "P50Ms": 3.11,
+        "P95Ms": 5.16
+      },
+      {
+        "Uri": "http://localhost:8081/users/profile",
+        "Requests": 20,
+        "Successful": 20,
+        "Statuses": "200x20",
+        "MeanMs": 3.89,
+        "P50Ms": 3.82,
+        "P95Ms": 4.68
+      }
+    ]
+  }
+}
